@@ -7,7 +7,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -19,10 +18,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 /**
- * To invoke secuirty
+ * To invoke security manager to authenticate the token
  */
-
-
 @Component
 @Log4j2
 @RequiredArgsConstructor
@@ -39,8 +36,7 @@ public class SecurityFilter extends OncePerRequestFilter {
 
         if (token != null && !token.isBlank()) {
             // gets the jwt token from the header
-            String tokenData = StringUtils.substringAfter(token, "Bearer ");
-            log.debug("Token: {}", tokenData);
+            String tokenData = StringUtils.substringAfter(token, "bearer ");
             securityManager.authenticate(tokenData).ifPresent(SecurityContextHolder.getContext()::setAuthentication);
         }
         filterChain.doFilter(request, response);

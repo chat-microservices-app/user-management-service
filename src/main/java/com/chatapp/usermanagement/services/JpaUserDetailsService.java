@@ -13,7 +13,4 @@ public interface JpaUserDetailsService extends UserDetailsService {
 
      UserDetailsTransfer login(LoginForm loginForm);
 
-
-
-
 }

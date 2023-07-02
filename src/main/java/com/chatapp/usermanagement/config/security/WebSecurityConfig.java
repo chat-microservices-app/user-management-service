@@ -21,7 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @EnableGlobalAuthentication
 @RequiredArgsConstructor
-@EnableMethodSecurity( securedEnabled = true)
+@EnableMethodSecurity(securedEnabled = true)
 @Configuration
 public class WebSecurityConfig {
 
