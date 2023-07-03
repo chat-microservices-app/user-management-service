@@ -1,6 +1,7 @@
 package com.chatapp.usermanagement.config.security.filter;
 
 
+import com.chatapp.usermanagement.config.rest.RestProperties;
 import com.chatapp.usermanagement.config.security.SecurityManager;
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.FilterChain;
@@ -36,7 +37,7 @@ public class SecurityFilter extends OncePerRequestFilter {
 
         if (token != null && !token.isBlank()) {
             // gets the jwt token from the header
-            String tokenData = StringUtils.substringAfter(token, "bearer ");
+            String tokenData = StringUtils.substringAfter(token, RestProperties.TOKEN_PREFIX);
             securityManager.authenticate(tokenData).ifPresent(SecurityContextHolder.getContext()::setAuthentication);
         }
         filterChain.doFilter(request, response);

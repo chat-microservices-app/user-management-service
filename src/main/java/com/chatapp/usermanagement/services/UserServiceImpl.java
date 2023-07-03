@@ -1,6 +1,8 @@
 package com.chatapp.usermanagement.services;
 
 import com.chatapp.usermanagement.domain.User;
+import com.chatapp.usermanagement.enums.Role;
+import com.chatapp.usermanagement.event.UserUpdateMssEvent;
 import com.chatapp.usermanagement.repositories.UserRepository;
 import com.chatapp.usermanagement.web.dto.LoginForm;
 import com.chatapp.usermanagement.web.dto.RegistrationForm;
@@ -9,6 +11,7 @@ import com.chatapp.usermanagement.web.mapper.UserMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -29,18 +32,20 @@ public class UserServiceImpl implements UserService {
 
     private final AuthorityService authorityService;
 
+    private final ApplicationEventPublisher applicationEventPublisher;
+
     @Override
     public UserDetailsTransfer register(RegistrationForm registrationForm) {
-
-
-        // filer out roles by prefixing ROLE_ and save them
+        // filer out roles by prefixing ROLE_ and save it
         String roles = Arrays.stream(registrationForm.roles().split(" "))
-                .filter(role -> role.startsWith("ROLE_")).reduce("", (a, b) -> a + " " + b)
+                .filter(role -> role.startsWith(Role.PREFIX.getLabel()))
+                .map(role -> role.replace(Role.PREFIX.getLabel(), ""))
+                .reduce("", (a, b) -> a + " " + b)
                 .trim();
 
         // save all authorities
         String permissions = Arrays.stream(registrationForm.roles().split(" "))
-                .filter(permission -> !permission.startsWith("ROLE_")).reduce("", (a, b) -> a + " " + b)
+                .filter(permission -> !permission.startsWith(Role.PREFIX.getLabel())).reduce("", (a, b) -> a + " " + b)
                 .trim();
 
         User user = userMapper.registerFormToUser(registrationForm);
@@ -48,6 +53,10 @@ public class UserServiceImpl implements UserService {
 
         log.debug("User to be saved: {}", user.getRoles());
         User savedUser = userRepository.saveAndFlush(user);
+
+        // publish event to update other microservices to populate user data
+        applicationEventPublisher.publishEvent(new UserUpdateMssEvent(userMapper.userToUserDTO(savedUser, roles)));
+
         return userMapper.userToUserDetailsTransfer(userRepository.save(savedUser));
     }
 
@@ -58,7 +67,6 @@ public class UserServiceImpl implements UserService {
         if (userToLoggedIn.getPassword().equals(loginForm.password())) {
             return userMapper.userToUserDetailsTransfer(userToLoggedIn);
         }
-
         //TODO create custom exception
         throw new RuntimeException("Invalid password");
     }

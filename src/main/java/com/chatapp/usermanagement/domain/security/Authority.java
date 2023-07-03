@@ -16,7 +16,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @ToString
 @Builder
-@Entity(name = "authority")
+@Entity
+@Table(name = "authority")
 public class Authority {
 
     @Id
@@ -31,6 +32,7 @@ public class Authority {
 
     //referencing the property authorities where we have declared the dependencies for joining tables
     @ManyToMany(mappedBy = "authorities")
+    @ToString.Exclude
     private Set<Role> roles;
 
 

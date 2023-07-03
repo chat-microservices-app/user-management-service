@@ -18,7 +18,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Entity(name = "role")
+@Entity
+@Table(name = "role")
 public class Role {
 
     @Id
@@ -31,6 +32,7 @@ public class Role {
     private String roleName;
 
     @ManyToMany(mappedBy = "roles")
+    @ToString.Exclude
     private Set<User> users;
 
     //hibernate creates just a single sql statement rather than a separate statement for each entity

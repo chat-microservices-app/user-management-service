@@ -28,7 +28,8 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Entity(name = "user_account")
+@Entity
+@Table(name = "user_account")
 public class User implements UserDetails, CredentialsContainer {
 
     @Id
@@ -82,7 +83,8 @@ public class User implements UserDetails, CredentialsContainer {
                 .map(authority -> (GrantedAuthority) new SimpleGrantedAuthority(authority.getPermission()))
                 .collect(Collectors.toSet());
         grantedAuthorities.addAll(
-                this.roles.stream().map(role -> (GrantedAuthority) new SimpleGrantedAuthority(role.getRoleName()))
+                this.roles.stream().map(role -> (GrantedAuthority) new SimpleGrantedAuthority(
+                        com.chatapp.usermanagement.enums.Role.PREFIX.getLabel() + role.getRoleName()))
                         .collect(Collectors.toSet())
         );
         return grantedAuthorities;

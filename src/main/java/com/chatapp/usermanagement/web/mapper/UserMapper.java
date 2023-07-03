@@ -3,7 +3,9 @@ package com.chatapp.usermanagement.web.mapper;
 
 import com.chatapp.usermanagement.domain.User;
 import com.chatapp.usermanagement.web.dto.RegistrationForm;
+import com.chatapp.usermanagement.web.dto.UserDTO;
 import com.chatapp.usermanagement.web.dto.UserDetailsTransfer;
+import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.security.core.GrantedAuthority;
@@ -23,6 +25,11 @@ public interface UserMapper {
 
     @Mapping(target = "authorities", expression = "java(map(user.getAuthorities()))")
     UserDetailsTransfer userToUserDetailsTransfer(User user);
+
+
+    @Mapping(target = "role" , defaultValue = "")
+    UserDTO userToUserDTO(User user, String role);
+
 
     default Set<String> map(Set<GrantedAuthority> authorities) {
         if (authorities == null) {
