@@ -17,7 +17,6 @@ public class UserDTO {
     String firstName;
     String lastName;
     String pictureUrl;
-    String role;
     String username;
 
 }

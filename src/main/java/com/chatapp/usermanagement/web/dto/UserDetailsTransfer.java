@@ -2,9 +2,7 @@ package com.chatapp.usermanagement.web.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
-import org.springframework.security.core.GrantedAuthority;
 
-import java.util.Arrays;
 import java.util.Set;
 
 

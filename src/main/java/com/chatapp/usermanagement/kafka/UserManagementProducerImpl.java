@@ -3,9 +3,9 @@ package com.chatapp.usermanagement.kafka;
 import com.chatapp.usermanagement.web.dto.UserDTO;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
-import org.springframework.messaging.Message;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 

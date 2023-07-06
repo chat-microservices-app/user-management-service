@@ -1,9 +1,9 @@
 package com.chatapp.usermanagement.services;
 
 import com.chatapp.usermanagement.domain.User;
-import com.chatapp.usermanagement.enums.Role;
 import com.chatapp.usermanagement.event.UserUpdateMssEvent;
 import com.chatapp.usermanagement.repositories.UserRepository;
+import com.chatapp.usermanagement.utils.RoleHandler;
 import com.chatapp.usermanagement.web.dto.LoginForm;
 import com.chatapp.usermanagement.web.dto.RegistrationForm;
 import com.chatapp.usermanagement.web.dto.UserDetailsTransfer;
@@ -15,8 +15,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
-import java.util.Arrays;
 
 @RequiredArgsConstructor
 @Log4j2
@@ -37,16 +35,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDetailsTransfer register(RegistrationForm registrationForm) {
         // filer out roles by prefixing ROLE_ and save it
-        String roles = Arrays.stream(registrationForm.roles().split(" "))
-                .filter(role -> role.startsWith(Role.PREFIX.getLabel()))
-                .map(role -> role.replace(Role.PREFIX.getLabel(), ""))
-                .reduce("", (a, b) -> a + " " + b)
-                .trim();
+        String roles = RoleHandler.getRoles(registrationForm.roles());
 
         // save all authorities
-        String permissions = Arrays.stream(registrationForm.roles().split(" "))
-                .filter(permission -> !permission.startsWith(Role.PREFIX.getLabel())).reduce("", (a, b) -> a + " " + b)
-                .trim();
+        String permissions = RoleHandler.getPermissions(registrationForm.roles());
 
         User user = userMapper.registerFormToUser(registrationForm);
         user.setRoles(roleService.saveAllRoles(roles, authorityService.saveAllAuthorities(permissions)));
@@ -55,7 +47,7 @@ public class UserServiceImpl implements UserService {
         User savedUser = userRepository.saveAndFlush(user);
 
         // publish event to update other microservices to populate user data
-        applicationEventPublisher.publishEvent(new UserUpdateMssEvent(userMapper.userToUserDTO(savedUser, roles)));
+        applicationEventPublisher.publishEvent(new UserUpdateMssEvent(userMapper.userToUserDTO(savedUser)));
 
         return userMapper.userToUserDetailsTransfer(userRepository.save(savedUser));
     }
@@ -88,6 +80,4 @@ public class UserServiceImpl implements UserService {
                                         usernameOrEmail)
                 ));
     }
-
-
 }
