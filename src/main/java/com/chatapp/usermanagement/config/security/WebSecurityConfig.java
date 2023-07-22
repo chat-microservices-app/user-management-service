@@ -1,12 +1,14 @@
 package com.chatapp.usermanagement.config.security;
 
 
+import com.chatapp.usermanagement.config.rest.RestProperties;
 import com.chatapp.usermanagement.config.security.filter.SecurityFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.configuration.EnableGlobalAuthentication;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -17,6 +19,7 @@ import org.springframework.security.config.annotation.web.configurers.HeadersCon
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @EnableWebSecurity
 @EnableGlobalAuthentication
@@ -34,13 +37,15 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception {
+        http
+                .securityMatcher(AntPathRequestMatcher
+                        .antMatcher(RestProperties.ROOT + "/v1" + ALLOW_ALL_ENDPOINTS));
         http.csrf(AbstractHttpConfigurer::disable);
 
         // to handle login
         http
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable);
-
         // setting up stateless authentication
         http.sessionManagement(
                         sessionManagement -> sessionManagement
@@ -56,10 +61,19 @@ public class WebSecurityConfig {
 
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
+        return http.build();
+    }
 
-        http.headers(httpSecurityHeadersConfigurer ->
-                httpSecurityHeadersConfigurer.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
-        );
+    @Bean
+    @Order(2)
+    public SecurityFilterChain h2ConsoleSecurityFilterChain(final HttpSecurity http) throws Exception {
+        http.securityMatcher(AntPathRequestMatcher.antMatcher("/h2-console/**"))
+                .authorizeHttpRequests(auth ->
+                        auth
+                                .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll()
+                )
+                .csrf(AbstractHttpConfigurer::disable)
+                .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
         return http.build();
     }
 

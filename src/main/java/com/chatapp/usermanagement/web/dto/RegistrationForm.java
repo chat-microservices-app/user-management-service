@@ -30,6 +30,8 @@ public record RegistrationForm(
 
         Date dateOfBirth,
 
+        String pictureUrl,
+
         String roles
 ) {
 }

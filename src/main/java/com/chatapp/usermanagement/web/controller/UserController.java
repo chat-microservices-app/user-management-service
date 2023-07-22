@@ -8,6 +8,7 @@ import com.chatapp.usermanagement.config.rest.RestProperties;
 import com.chatapp.usermanagement.services.UserService;
 import com.chatapp.usermanagement.web.dto.LoginForm;
 import com.chatapp.usermanagement.web.dto.RegistrationForm;
+import com.chatapp.usermanagement.web.dto.UserDTO;
 import com.chatapp.usermanagement.web.dto.UserDetailsTransfer;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +25,10 @@ public class UserController {
 
     private final UserService userService;
 
-    private final String BASE_URL = RestProperties.ROOT + "/v1" + RestProperties.USER.ROOT;
-
+    @GetMapping(path = "/{username}", produces = "application/json")
+    public ResponseEntity<UserDTO> getUserSession(@PathVariable("username") String username) {
+        return ResponseEntity.ok(userService.getUserSession(username));
+    }
 
     @Operation(summary = "Register a new user"
             , description = "Register a new user with the given details,provided by the security manager service"
@@ -33,6 +36,7 @@ public class UserController {
     @PostMapping(path = RestProperties.USER.REGISTER, consumes = "application/json", produces = "application/json")
     @RegisterPerm
     public ResponseEntity<UserDetailsTransfer> register(@RequestBody @Validated RegistrationForm registrationForm) {
+        String BASE_URL = RestProperties.ROOT + "/v1" + RestProperties.USER.ROOT;
         URI location = URI.create(String.format("%s/%s", BASE_URL, registrationForm.username()));
         return ResponseEntity.created(location).body(userService.register(registrationForm));
     }

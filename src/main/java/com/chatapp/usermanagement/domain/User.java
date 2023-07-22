@@ -8,8 +8,6 @@ import lombok.*;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -34,15 +32,14 @@ public class User implements UserDetails, CredentialsContainer {
 
     @Id
     @GeneratedValue(generator = "UUID", strategy = GenerationType.AUTO)
-    @JdbcTypeCode(SqlTypes.CHAR)
-    @Column(length = 36, columnDefinition = "varchar", updatable = false, nullable = false, name = "user_id")
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false, name = "user_id")
     private UUID userId;
 
-    @Column(length = 120, columnDefinition = "varchar", unique = true, nullable = false, name = "usernameOrEmail")
+    @Column(length = 120, columnDefinition = "varchar", unique = true, nullable = false, name = "username")
     private String username;
 
 
-    @Column(columnDefinition = "varchar(max)", nullable = false, name = "password")
+    @Column(columnDefinition = "varchar(500)", nullable = false, name = "password")
     private String password;
 
     @Column(name = "first_name", length = 120, columnDefinition = "varchar")
@@ -58,6 +55,9 @@ public class User implements UserDetails, CredentialsContainer {
 
     @Column(name = "date_of_birth", columnDefinition = "date")
     private Date dateOfBirth;
+
+    @Column(name = "picture_url", columnDefinition = "varchar")
+    private String pictureUrl;
 
 
     // singular allows adding one role at a time

@@ -1,16 +1,15 @@
 package com.chatapp.usermanagement.web.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.UUID;
 
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
+@ToString
+@Setter
+@Getter
 @Builder
 public class UserDTO {
     UUID userId;
@@ -18,5 +17,4 @@ public class UserDTO {
     String lastName;
     String pictureUrl;
     String username;
-
 }

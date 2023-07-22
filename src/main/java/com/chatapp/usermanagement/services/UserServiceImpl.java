@@ -6,6 +6,7 @@ import com.chatapp.usermanagement.repositories.UserRepository;
 import com.chatapp.usermanagement.utils.RoleHandler;
 import com.chatapp.usermanagement.web.dto.LoginForm;
 import com.chatapp.usermanagement.web.dto.RegistrationForm;
+import com.chatapp.usermanagement.web.dto.UserDTO;
 import com.chatapp.usermanagement.web.dto.UserDetailsTransfer;
 import com.chatapp.usermanagement.web.mapper.UserMapper;
 import jakarta.transaction.Transactional;
@@ -68,6 +69,14 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail).orElseThrow(
                 () -> new UsernameNotFoundException("User not found with usernameOrEmail or email : " + usernameOrEmail)
         );
+    }
+
+    @Override
+    public UserDTO getUserSession(String username) {
+        User user =userRepository.findByUsername(username, User.class).orElseThrow(
+                () -> new UsernameNotFoundException("User not found with username : " + username)
+        );
+        return userMapper.userToUserDTO(user);
     }
 
     @Override
