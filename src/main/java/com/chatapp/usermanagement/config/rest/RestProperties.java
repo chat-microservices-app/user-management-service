@@ -25,4 +25,10 @@ public final class RestProperties {
 
         public static final String DETAILS = "/details";
     }
+
+    public static final class MEDIA {
+        public static final String ROOT = "/media";
+
+
+    }
 }

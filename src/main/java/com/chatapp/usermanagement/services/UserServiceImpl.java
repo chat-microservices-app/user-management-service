@@ -16,6 +16,9 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Log4j2
@@ -88,5 +91,20 @@ public class UserServiceImpl implements UserService {
                                 new UsernameNotFoundException("User not found with usernameOrEmail or email : " +
                                         usernameOrEmail)
                 ));
+    }
+
+    @Override
+    public void updateProfilePicture(String userId, String pictureUrl) {
+        User user = userRepository.findByUsername(userId, User.class).orElseThrow(
+                () -> new UsernameNotFoundException("User not found with id : " + userId)
+        );
+
+        user.setPictureUrl(pictureUrl);
+
+        User savedUser = userRepository.saveAndFlush(user);
+
+        // publish event to update other microservices to populate user data
+        applicationEventPublisher.publishEvent(new UserUpdateMssEvent(userMapper.userToUserDTO(savedUser)));
+
     }
 }

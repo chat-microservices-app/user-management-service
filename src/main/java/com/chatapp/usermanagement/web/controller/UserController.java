@@ -12,11 +12,13 @@ import com.chatapp.usermanagement.web.dto.UserDTO;
 import com.chatapp.usermanagement.web.dto.UserDetailsTransfer;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 @RestController
@@ -52,5 +54,16 @@ public class UserController {
     @PostMapping(path = RestProperties.USER.LOGIN, produces = "application/json", consumes = "application/json")
     public ResponseEntity<UserDetailsTransfer> login(@RequestBody LoginForm loginForm) {
         return ResponseEntity.ok(userService.login(loginForm));
+    }
+
+    @PutMapping(path = "/{userId}/profile-picture", produces = "application/json", consumes = "application/json")
+    public ResponseEntity<Void> updateProfilePicture(@PathVariable("userId") String userId,
+                                          @RequestHeader HttpHeaders headers) {
+        // the location header contains the url of the uploaded image
+        userService.updateProfilePicture(
+                userId,
+                Objects.requireNonNull(headers.getLocation()).toString()
+        );
+        return ResponseEntity.noContent().build();
     }
 }
