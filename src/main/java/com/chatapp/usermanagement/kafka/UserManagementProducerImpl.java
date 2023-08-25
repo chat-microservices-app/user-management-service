@@ -22,7 +22,6 @@ public class UserManagementProducerImpl implements UserManagementProducer {
         Message<UserDTO> message = MessageBuilder
                 .withPayload(userDTO)
                 .setHeader(KafkaHeaders.TOPIC, topic.name())
-
                 .build();
         kafkaTemplate.send(message);
     }

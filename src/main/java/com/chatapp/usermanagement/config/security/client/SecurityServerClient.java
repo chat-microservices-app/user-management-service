@@ -8,7 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "${security-service.name}")
+@FeignClient(name = "${security-service.name}", url = "${security-service.url}")
 public interface SecurityServerClient {
     final String BASE_URL = RestProperties.ROOT + "/v1" + RestProperties.AUTH.ROOT;
 
