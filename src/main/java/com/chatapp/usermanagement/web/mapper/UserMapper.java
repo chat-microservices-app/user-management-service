@@ -16,15 +16,12 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
-
     @Mapping(target = "dateOfBirth", source = "dateOfBirth", dateFormat = "dd-MM-yyyy")
     @Mapping(target = "roles", ignore = true)
     User registerFormToUser(RegistrationForm registrationForm);
 
     @Mapping(target = "authorities", expression = "java(map(user.getAuthorities()))")
     UserDetailsTransfer userToUserDetailsTransfer(User user);
-
-
 
     UserDTO userToUserDTO(User user);
 

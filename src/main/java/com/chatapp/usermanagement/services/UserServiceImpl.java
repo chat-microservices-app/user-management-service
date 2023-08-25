@@ -2,6 +2,7 @@ package com.chatapp.usermanagement.services;
 
 import com.chatapp.usermanagement.domain.User;
 import com.chatapp.usermanagement.event.UserUpdateMssEvent;
+import com.chatapp.usermanagement.exceptions.PasswordNotMatchException;
 import com.chatapp.usermanagement.repositories.UserRepository;
 import com.chatapp.usermanagement.utils.RoleHandler;
 import com.chatapp.usermanagement.web.dto.LoginForm;
@@ -16,9 +17,9 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.util.UUID;
+import java.util.Objects;
+
 
 @RequiredArgsConstructor
 @Log4j2
@@ -38,6 +39,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDetailsTransfer register(RegistrationForm registrationForm) {
+
+
+        if (userRepository.existsByUsername(registrationForm.username())) {
+            throw new IllegalArgumentException("username already exists");
+        }
         // filer out roles by prefixing ROLE_ and save it
         String roles = RoleHandler.getRoles(registrationForm.roles());
 
@@ -60,47 +66,38 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDetailsTransfer login(LoginForm loginForm) {
         User userToLoggedIn = (User) loadUserByUsername(loginForm.usernameOrEmail());
-        if (userToLoggedIn.getPassword().equals(loginForm.password())) {
+        if (Objects.equals(userToLoggedIn.getPassword(), loginForm.password())) {
             return userMapper.userToUserDetailsTransfer(userToLoggedIn);
         }
-        //TODO create custom exception
-        throw new RuntimeException("Invalid password");
+        throw new PasswordNotMatchException("username or password is not correct");
     }
 
     @Override
     public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
         return userRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail).orElseThrow(
-                () -> new UsernameNotFoundException("User not found with usernameOrEmail or email : " + usernameOrEmail)
+                () -> new UsernameNotFoundException("username or email is not part of our records")
         );
     }
 
     @Override
     public UserDTO getUserSession(String username) {
-        User user =userRepository.findByUsername(username, User.class).orElseThrow(
-                () -> new UsernameNotFoundException("User not found with username : " + username)
+        User user = userRepository.findByUsername(username, User.class).orElseThrow(
+                () -> new UsernameNotFoundException("user not found with username : " + username)
         );
         return userMapper.userToUserDTO(user);
     }
 
     @Override
     public UserDetailsTransfer loadUserByUsernameOrEmail(String usernameOrEmail) throws UsernameNotFoundException {
-        return userMapper.userToUserDetailsTransfer(userRepository
-                .findByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
-                .orElseThrow(
-                        () ->
-                                new UsernameNotFoundException("User not found with usernameOrEmail or email : " +
-                                        usernameOrEmail)
-                ));
+        return userMapper.userToUserDetailsTransfer((User) loadUserByUsername(usernameOrEmail));
     }
 
     @Override
     public void updateProfilePicture(String userId, String pictureUrl) {
         User user = userRepository.findByUsername(userId, User.class).orElseThrow(
-                () -> new UsernameNotFoundException("User not found with id : " + userId)
+                () -> new UsernameNotFoundException("username or email or email is not part of our records")
         );
-
         user.setPictureUrl(pictureUrl);
-
         User savedUser = userRepository.saveAndFlush(user);
 
         // publish event to update other microservices to populate user data
