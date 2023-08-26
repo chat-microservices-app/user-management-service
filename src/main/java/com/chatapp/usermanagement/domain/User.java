@@ -8,6 +8,8 @@ import lombok.*;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -38,7 +40,7 @@ public class User implements UserDetails, CredentialsContainer {
     @Column(length = 120, columnDefinition = "varchar", unique = true, nullable = false, name = "username")
     private String username;
 
-
+    @ToString.Exclude
     @Column(columnDefinition = "varchar(500)", nullable = false, name = "password")
     private String password;
 
@@ -67,6 +69,7 @@ public class User implements UserDetails, CredentialsContainer {
     @JoinTable(name = "user_role",
             joinColumns = {@JoinColumn(name = "user_id", referencedColumnName = "user_id", foreignKey = @ForeignKey(name = "user_id"))},
             inverseJoinColumns = {@JoinColumn(name = "role_id", referencedColumnName = "role_id", foreignKey = @ForeignKey(name = "role_id"))})
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Set<Role> roles;
 
 

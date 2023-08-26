@@ -3,10 +3,10 @@ package com.chatapp.usermanagement.domain.security;
 
 import com.chatapp.usermanagement.domain.User;
 import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Table;
 import lombok.*;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.*;
 import org.hibernate.type.SqlTypes;
 
 import java.util.Set;
@@ -42,5 +42,6 @@ public class Role {
     @JoinTable(name = "role_authority",
             joinColumns = {@JoinColumn(name = "role_id", referencedColumnName = "role_id")},
             inverseJoinColumns = {@JoinColumn(name = "authority_id", referencedColumnName = "authority_id")})
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Set<Authority> authorities;
 }

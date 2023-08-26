@@ -19,6 +19,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
+import java.util.UUID;
 
 
 @RequiredArgsConstructor
@@ -95,7 +96,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateProfilePicture(String userId, String pictureUrl) {
         User user = userRepository.findByUsername(userId, User.class).orElseThrow(
-                () -> new UsernameNotFoundException("username or email or email is not part of our records")
+                () -> new UsernameNotFoundException("username or email is not part of our records")
         );
         user.setPictureUrl(pictureUrl);
         User savedUser = userRepository.saveAndFlush(user);
@@ -103,5 +104,32 @@ public class UserServiceImpl implements UserService {
         // publish event to update other microservices to populate user data
         applicationEventPublisher.publishEvent(new UserUpdateMssEvent(userMapper.userToUserDTO(savedUser)));
 
+    }
+
+    @Override
+    public UserDTO updateUserProperties(String userId, RegistrationForm userDTO) {
+        // check if the user exists
+        User user = userRepository.findByUsername(userId, User.class).orElseThrow(
+                () -> new UsernameNotFoundException("username or email or email is not part of our records")
+        );
+        userMapper.updateUserFromRegistrationForm(userDTO, user);
+
+        User savedUser = userRepository.saveAndFlush(user);
+
+        // publish event to update other microservices to populate user data
+        applicationEventPublisher.publishEvent(new UserUpdateMssEvent(userMapper.userToUserDTO(savedUser)));
+
+        return userMapper.userToUserDTO(savedUser);
+    }
+
+    @Override
+    public UUID deleteUser(UUID userId) {
+        if(!userRepository.existsById(userId)){
+            throw new UsernameNotFoundException(" The user is not found");
+        }
+        //TODO delete all the user data in other microservices
+        // includes chat-service, and media-service
+        userRepository.deleteById(userId);
+        return userId;
     }
 }

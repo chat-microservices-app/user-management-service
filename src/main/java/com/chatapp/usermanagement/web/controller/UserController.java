@@ -13,12 +13,14 @@ import com.chatapp.usermanagement.web.dto.UserDetailsTransfer;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.Objects;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @RestController
@@ -33,7 +35,7 @@ public class UserController {
     }
 
     @Operation(summary = "Register a new user"
-            , description = "Register a new user with the given details,provided by the security manager service"
+            , description = "Register a new user with the given details,provided by the security service"
             , tags = {"users"})
     @PostMapping(path = RestProperties.USER.REGISTER, consumes = "application/json", produces = "application/json")
     @RegisterPerm
@@ -58,12 +60,27 @@ public class UserController {
 
     @PutMapping(path = "/{userId}/profile-picture", produces = "application/json", consumes = "application/json")
     public ResponseEntity<Void> updateProfilePicture(@PathVariable("userId") String userId,
-                                          @RequestHeader HttpHeaders headers) {
+                                                     @RequestHeader HttpHeaders headers) {
         // the location header contains the url of the uploaded image
         userService.updateProfilePicture(
                 userId,
                 Objects.requireNonNull(headers.getLocation()).toString()
         );
         return ResponseEntity.noContent().build();
+    }
+
+
+    @PutMapping(path = "/{userId}", produces = "application/json", consumes = "application/json")
+    public ResponseEntity<UserDTO> updateUser(@PathVariable("userId") String userId,
+                                              @RequestBody RegistrationForm updateForm) {
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(userService.updateUserProperties(userId, updateForm));
+    }
+
+    @DeleteMapping(path = "/{userId}", produces = "application/json")
+    public ResponseEntity<Void> deleteUser(@PathVariable("userId") UUID userId) {
+        String BASE_URL = RestProperties.ROOT + "/v1" + RestProperties.USER.ROOT;
+        URI uri = URI.create(String.format("%s%s", BASE_URL, userService.deleteUser(userId)));
+        return ResponseEntity.noContent().location(uri).build();
     }
 }
