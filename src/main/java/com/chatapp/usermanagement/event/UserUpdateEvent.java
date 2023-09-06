@@ -3,10 +3,10 @@ package com.chatapp.usermanagement.event;
 import com.chatapp.usermanagement.web.dto.UserDTO;
 import org.springframework.context.ApplicationEvent;
 
-public class UserUpdateMssEvent extends ApplicationEvent {
+public class UserUpdateEvent extends ApplicationEvent {
 
 
-    public UserUpdateMssEvent(Object source) {
+    public UserUpdateEvent(Object source) {
         super(source);
     }
 

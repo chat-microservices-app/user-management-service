@@ -1,7 +1,8 @@
 package com.chatapp.usermanagement.services;
 
 import com.chatapp.usermanagement.domain.User;
-import com.chatapp.usermanagement.event.UserUpdateMssEvent;
+import com.chatapp.usermanagement.event.UserDeleteEvent;
+import com.chatapp.usermanagement.event.UserUpdateEvent;
 import com.chatapp.usermanagement.exceptions.PasswordNotMatchException;
 import com.chatapp.usermanagement.repositories.UserRepository;
 import com.chatapp.usermanagement.utils.RoleHandler;
@@ -58,7 +59,7 @@ public class UserServiceImpl implements UserService {
         User savedUser = userRepository.saveAndFlush(user);
 
         // publish event to update other microservices to populate user data
-        applicationEventPublisher.publishEvent(new UserUpdateMssEvent(userMapper.userToUserDTO(savedUser)));
+        applicationEventPublisher.publishEvent(new UserUpdateEvent(userMapper.userToUserDTO(savedUser)));
 
         return userMapper.userToUserDetailsTransfer(userRepository.save(savedUser));
     }
@@ -102,7 +103,7 @@ public class UserServiceImpl implements UserService {
         User savedUser = userRepository.saveAndFlush(user);
 
         // publish event to update other microservices to populate user data
-        applicationEventPublisher.publishEvent(new UserUpdateMssEvent(userMapper.userToUserDTO(savedUser)));
+        applicationEventPublisher.publishEvent(new UserUpdateEvent(userMapper.userToUserDTO(savedUser)));
 
     }
 
@@ -117,19 +118,23 @@ public class UserServiceImpl implements UserService {
         User savedUser = userRepository.saveAndFlush(user);
 
         // publish event to update other microservices to populate user data
-        applicationEventPublisher.publishEvent(new UserUpdateMssEvent(userMapper.userToUserDTO(savedUser)));
+        applicationEventPublisher.publishEvent(new UserUpdateEvent(userMapper.userToUserDTO(savedUser)));
 
         return userMapper.userToUserDTO(savedUser);
     }
 
     @Override
     public UUID deleteUser(UUID userId) {
-        if(!userRepository.existsById(userId)){
-            throw new UsernameNotFoundException(" The user is not found");
-        }
-        //TODO delete all the user data in other microservices
-        // includes chat-service, and media-service
-        userRepository.deleteById(userId);
+
+        User toBeDeleted = userRepository.findById(userId).orElseThrow(
+                () -> new UsernameNotFoundException("The user to be deleted does not exist")
+        );
+
+        userRepository.deleteById(toBeDeleted.getUserId());
+
+        // delete all the user data in other microservices
+        applicationEventPublisher.publishEvent(new UserDeleteEvent(userMapper.userToUserDTO(toBeDeleted)));
+
         return userId;
     }
 }

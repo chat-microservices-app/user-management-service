@@ -5,4 +5,6 @@ import com.chatapp.usermanagement.web.dto.UserDTO;
 public interface UserManagementProducer {
 
     void updateUser(UserDTO userDTO);
+
+    void deleteUser(UserDTO userDTO);
 }
